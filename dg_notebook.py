@@ -107,7 +107,7 @@ def main(username: str, hostname: str,
             close = input('Enter anything to close the connections: ')
     except KeyboardInterrupt:
         pass
-    
+
     # Close connections
     forward_server.stop()
     ssh.close()
