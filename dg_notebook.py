@@ -60,7 +60,7 @@ def main(username: str,
          hostname: str,
          key_filename: str,
          needs_password: bool = False,
-         notebook_cmd: str = 'jupyter notebook'):
+         notebook_cmd: str = 'notebook'):
     """Setup notebook on remote server, e.g., dgx2
 
     Args:
@@ -70,10 +70,12 @@ def main(username: str,
         needs_password (bool, optional): Does the private key require
             a passcode? By default, this is set to False, but if
             True, then will prompt user for a passcode.
-        notebook_cmd (str, optional): By default 'jupyter notebook' and
+        notebook_cmd (str, optional): By default 'notebook' and
             a jupyter notebook is launched. Can also provide
-            'jupyter lab' to run jupyter lab instead.
+            'lab' to run jupyter lab instead.
     """
+
+    print(type(needs_password))
 
     # Prompt for password if needed
     if needs_password:
@@ -85,8 +87,10 @@ def main(username: str,
 
     # Make sure input looks okay
     notebook_cmd = notebook_cmd.strip()
-    if notebook_cmd not in {'jupyter notebook', 'jupyter lab'}:
+    if notebook_cmd not in {'notebook', 'lab'}:
         raise RuntimeError(f'Invalid notebook_cmd {notebook_cmd}')
+    else:
+        notebook_cmd = 'jupyter ' + notebook_cmd
 
     # Start connection to remote server which will run notebook
     ssh = _init_ssh_client(username, hostname, key_filename, password)
@@ -99,7 +103,8 @@ def main(username: str,
 
     # Start ssh tunnel forwarding, equiv of:
     # "ssh -L port:localhost:port username@hostname -i key_filename"
-    forward_server = SSHTunnelForwarder(hostname, ssh_username=username,
+    forward_server = SSHTunnelForwarder(ssh_address_or_host=hostname,
+                                        ssh_username=username,
                                         ssh_pkey=key_filename,
                                         ssh_private_key_password=password,
                                         remote_bind_address=('127.0.0.1', int(notebook_port)))
@@ -114,7 +119,8 @@ def main(username: str,
     try:
         close = 'keep going'
         while close == 'keep going':
-            close = input('Press Enter to close connections.')
+            print('Press Enter to close connections')
+            close = input('')
     except KeyboardInterrupt:
         pass
 

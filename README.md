@@ -1,29 +1,24 @@
-This repository contains a python script `dg_notebook.py`, which when run, will connect to a remote server, launch a notebook and then in the terminal setup port forwarding between your local host and that remote notebook. 
+## Remote Notebooks
 
-Warning: This isn't a fully developed library, more of a quick proof of concept, and right now will only work on mac or linux. 
+This repository contains a python script `dg_notebook.py`, which when run, will connect to a remote server,
+launch a notebook and then in the terminal setup port forwarding between your local host and that remote notebook. 
 
-In order to use the script, there are a few python library requiriments which should be installed.
-
-
-Warning: This is a just a quick proof of concept.
-
-This repo tried to simplify launching notebooks from a remote server.
-It only works on mac / linux.
-
-1. Make sure you install the python requirements.txt locally, with
-
+In order to use the script, there are a few python library requirements which should be installed.
+You can install them with pip in whatever your default python environment is as:
     
     pip install -r requirements.txt
 
-2. Run add_new.py, which will walk you through generating an alias
-to add you zshrc file.
+Next, you can either use the script `dg_notebook.py` directly however you want, as it gives you command line
+options. Run the following command to open a description of these:
 
-3. Or instead, you could just make the alias yourself, for example:
+    python dg_notebook.py --help
 
+Or, you can run the provided `add_new.py` script, which will walk you through generating a re-usable bash alias.
 
-    alias dg_notebook="python /Users/shahn/PycharmProjects/remote_notebook/dg_notebook.py --username=sage.hahn --hostname=10.69.42.62 --key_filename=/Users/shahn/.ssh/dgx --password="
+    python add_new.py
 
-4. If you added an alias to zshrc, make sure to open a new terminal or source it, e.g.,
+If you want different configurations, you can just run add new multiple times to generate those.
+You can also go in and manually edit the output of add new in the .zshrc file with whatever
+text editor you like.
 
-
-    source ~/.zshrc
+In the end, the command should look something like this:

@@ -21,20 +21,24 @@ def main():
     # Notebook or lab
     notebook_cmd = input('Use jupyter notebook (default, just press enter), or type "lab" to use jupyter lab instead.')
     if notebook_cmd in ['lab', 'Lab', '"Lab"', 'l']:
-        notebook_cmd = 'jupyter lab'
+        notebook_cmd = 'lab'
     else:
-        notebook_cmd = 'jupyter notebook'
+        notebook_cmd = 'notebook'
 
     # Can use this to override passcode
-    needs_password = input("Requires private key passcode (y/n): ").strip()
+    needs_password = input("Requires private key passcode (y/n): ").strip().lower()
+    if needs_password == 'y':
+        needs_password = True
+    else:
+        needs_password = False
 
     # Get choice of alias name
     new_cmd = input("new command/alias name: ")
 
     # Generate alias as string
-    cmd = f'python {script_loc} - -username = {username}'
-    cmd += f'--hostname={hostname} --key_filename={key_filename} --needs_password={needs_password}'
-    cmd += f' --notebook_cmd={notebook_cmd}'
+    cmd = f'python {script_loc} --username {username}'
+    cmd += f' --hostname {hostname} --key_filename {key_filename} --needs_password {needs_password}'
+    cmd += f' --notebook_cmd {notebook_cmd}'
 
     # Add to zshrc?
     add = input('Add to .zshrc? (y/n): ').strip()
