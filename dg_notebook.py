@@ -36,9 +36,11 @@ def _check_for_link(lines: str) -> str:
     return ''
 
 
-def main(username: str, hostname: str,
-         key_filename: str, password: str='',
-         notebook_cmd: str='jupyter notebook'):
+def main(username: str,
+         hostname: str,
+         key_filename: str,
+         password: str = '',
+         notebook_cmd: str = 'jupyter notebook'):
     """Setup notebook on remote server, e.g., dgx2
 
     Args:
@@ -89,28 +91,30 @@ def main(username: str, hostname: str,
     print(f'Notebook running on remote host on port: {notebook_port}')
 
     # Start ssh tunnel forwarding
+    # os.system(f'ssh -L {port}:localhost:{port} {username}@{hostname} -i {key_filename}')
     forward_server = SSHTunnelForwarder(hostname, ssh_username=username,
                                         ssh_pkey=key_filename,
                                         ssh_private_key_password=password,
-                                        remote_bind_address=('127.0.0.1', notebook_port))
+                                        remote_bind_address=('127.0.0.1', int(notebook_port)))
     forward_server.start()
     print('Started forwarding server')
 
     # Open in browser
-    local_link = notebook_link.replace(notebook_port, forward_server.local_bind_port)
+    local_link = notebook_link.replace(notebook_port, str(forward_server.local_bind_port))
     webbrowser.open(local_link, new=2)
 
     # Just keep running until user wants to quit
     try:
         close = 'keep going'
-        while close != 'keep going':
-            close = input('Enter anything to close the connections: ')
+        while close == 'keep going':
+            close = input('Press Enter to close connections.')
     except KeyboardInterrupt:
         pass
 
     # Close connections
     forward_server.stop()
     ssh.close()
+
 
 if __name__ == '__main__':
     fire.Fire(main)

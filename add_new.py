@@ -17,6 +17,8 @@ def main():
         key_filename = os.path.expanduser(key_filename)
     key_filename = os.path.abspath(key_filename)
 
+    notebook_cmd = input('jupyter notebook')
+
     password = input("private key passcode (empty for none): ")
     new_cmd = input("command name: ")
 
