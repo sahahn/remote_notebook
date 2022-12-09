@@ -8,6 +8,7 @@ def main():
     cwd = os.getcwd()
     script_loc = os.path.join(cwd, 'dg_notebook.py')
 
+    # Get basic info
     username = input("username: ")
     hostname = input("server ip: ")
 
@@ -31,19 +32,23 @@ def main():
     new_cmd = input("new command/alias name: ")
 
     # Generate alias as string
-    alias = f'alias {new_cmd}="python {script_loc} --username={username} '
-    alias += f'--hostname={hostname} --key_filename={key_filename} --needs_password={needs_password}'
-    alias += f' --notebook_cmd={notebook_cmd}"'
+    cmd = f'python {script_loc} - -username = {username}'
+    cmd += f'--hostname={hostname} --key_filename={key_filename} --needs_password={needs_password}'
+    cmd += f' --notebook_cmd={notebook_cmd}'
 
     # Add to zshrc?
     add = input('Add to .zshrc? (y/n): ').strip()
     if add == 'y':
+        alias = f'alias {new_cmd}="{cmd}"'
         os.system(f"echo '{alias}' >> ~/.zshrc")
         print('Either open a new terminal or run source ~/.zshrc to use your generated alias.')
+        print('You can also go into ~/.zshrc and manually edit the command.')
+        print('If everything worked you should now be able to start a remote notebook as:')
+        print(new_cmd)
 
-    print('This is the generated alias:')
-    print(alias)
-
+    else:
+        print('This is your generated command for starting a remote notebook!')
+        print(cmd)
 
 if __name__ == '__main__':
     main()
