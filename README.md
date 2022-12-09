@@ -22,3 +22,5 @@ You can also go in and manually edit the output of add new in the .zshrc file wi
 text editor you like.
 
 In the end, the command should look something like this:
+
+    alias dg_notebook="python /Users/shahn/remote_notebook/dg_notebook.py --username sage.hahn --hostname 10.69.42.62 --key_filename /Users/shahn/.ssh/dgx --needs_password False --notebook_cmd notebook"
