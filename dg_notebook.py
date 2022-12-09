@@ -1,6 +1,6 @@
 import time
 import paramiko
-import os
+import getpass
 import webbrowser
 import fire
 import typing
@@ -20,8 +20,6 @@ def _init_ssh_client(username: str, hostname: str,
                 username=username,
                 key_filename=key_filename,
                 password=password)
-
-    print(f'Connected to {hostname} over SSH')
     return ssh
 
 
@@ -35,39 +33,8 @@ def _check_for_link(lines: str) -> str:
 
     return ''
 
+def _start_notebook(ssh, notebook_cmd):
 
-def main(username: str,
-         hostname: str,
-         key_filename: str,
-         password: str = '',
-         notebook_cmd: str = 'jupyter notebook'):
-    """Setup notebook on remote server, e.g., dgx2
-
-    Args:
-        username (str): Your username
-        hostname (str): The address of the server
-        key_filename (str): Location of your private key.
-        password (str, optional): This is the password
-            if any used for your private key. Set to '' if
-            no passcode set.
-        notebook_cmd (str, optional): By default 'jupyter notebook' and
-            a jupyter notebook is launched. Can also provide
-            'jupyter lab' to run jupyter lab instead.
-    """
-
-    # Empty str password to None
-    if len(password) == 0:
-        password = None
-
-    # Make sure input okay
-    notebook_cmd = notebook_cmd.strip()
-    if notebook_cmd not in {'jupyter notebook', 'jupyter lab'}:
-        raise RuntimeError(f'Invalid notebook_cmd {notebook_cmd}')
-
-    # Start connection to remote server which will run notebook
-    ssh = _init_ssh_client(username, hostname, key_filename, password)
-
-    # Start the notebook
     _, stdout, _ = ssh.exec_command(f'{notebook_cmd} --no-browser')
 
     notebook_link = None
@@ -86,20 +53,60 @@ def main(username: str,
 
         time.sleep(.1)
 
-    # Open port forwarding
+    return notebook_link
+
+
+def main(username: str,
+         hostname: str,
+         key_filename: str,
+         needs_password: bool = False,
+         notebook_cmd: str = 'jupyter notebook'):
+    """Setup notebook on remote server, e.g., dgx2
+
+    Args:
+        username (str): Your username
+        hostname (str): The address of the server
+        key_filename (str): Location of your private key.
+        needs_password (bool, optional): Does the private key require
+            a passcode? By default, this is set to False, but if
+            True, then will prompt user for a passcode.
+        notebook_cmd (str, optional): By default 'jupyter notebook' and
+            a jupyter notebook is launched. Can also provide
+            'jupyter lab' to run jupyter lab instead.
+    """
+
+    # Prompt for password if needed
+    if needs_password:
+        password = getpass.getpass('Private key password: ')
+        if len(password) == 0:
+            password = None
+    else:
+        password = None
+
+    # Make sure input looks okay
+    notebook_cmd = notebook_cmd.strip()
+    if notebook_cmd not in {'jupyter notebook', 'jupyter lab'}:
+        raise RuntimeError(f'Invalid notebook_cmd {notebook_cmd}')
+
+    # Start connection to remote server which will run notebook
+    ssh = _init_ssh_client(username, hostname, key_filename, password)
+    print(f'Connected to {hostname} over SSH')
+
+    # Run notebook
+    notebook_link = _start_notebook(ssh, notebook_cmd)
     notebook_port = notebook_link.split(':')[-1].split('/')[0]
     print(f'Notebook running on remote host on port: {notebook_port}')
 
-    # Start ssh tunnel forwarding
-    # os.system(f'ssh -L {port}:localhost:{port} {username}@{hostname} -i {key_filename}')
+    # Start ssh tunnel forwarding, equiv of:
+    # "ssh -L port:localhost:port username@hostname -i key_filename"
     forward_server = SSHTunnelForwarder(hostname, ssh_username=username,
                                         ssh_pkey=key_filename,
                                         ssh_private_key_password=password,
                                         remote_bind_address=('127.0.0.1', int(notebook_port)))
     forward_server.start()
-    print('Started forwarding server')
+    print('Started port forwarding connection')
 
-    # Open in browser
+    # Open notebook in browser
     local_link = notebook_link.replace(notebook_port, str(forward_server.local_bind_port))
     webbrowser.open(local_link, new=2)
 
